@@ -6,11 +6,14 @@ import com.vatolinrp.jogger.storage.SimpleDataBase;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
 
+import javax.ws.rs.DELETE;
 import javax.ws.rs.GET;
 import javax.ws.rs.HeaderParam;
 import javax.ws.rs.POST;
+import javax.ws.rs.PUT;
 import javax.ws.rs.Path;
 import javax.ws.rs.PathParam;
 import javax.ws.rs.Produces;
@@ -44,14 +47,64 @@ public class JoggerService {
   }
 
   @POST
-  @Path("/users/{login}/runs")
-  public Response addRun( @PathParam("login") final String login,
-    @HeaderParam("password") final String password, final Run run )
+  @Path("/users")
+  public Response createUser( final User user )
   {
-    final User jogger = simpleDataBase.getUsers().stream()
-      .filter( user -> login.equals( user.getLogin() ) && password.equals( user.getPassword() ) )
-      .findFirst().get();
-    jogger.getJogHistory().put( LocalDate.now().toString(), run );
-    return Response.ok().build();
+    simpleDataBase.getUsers().add( user );
+    return Response.status( HttpStatus.CREATED.value() ).build();
+  }
+
+  @PUT
+  @Path("/users/{login}")
+  public Response updateUser( @HeaderParam("password") final String password, @HeaderParam("login") final String login,
+    final User userToUpdate, @PathParam("login") final String joggersLogin )
+  {
+    boolean isAuthorized = isAuthorized( login, password );
+    if ( isAuthorized ) {
+      final User outdatedUser = simpleDataBase.getUsers().stream()
+        .filter( user -> user.getLogin().equals( joggersLogin ) )
+        .findFirst().get();
+      simpleDataBase.getUsers().remove( outdatedUser );
+      simpleDataBase.getUsers().add( userToUpdate );
+      return Response.status( HttpStatus.NO_CONTENT.value() ).build();
+    }
+    return Response.status( HttpStatus.UNAUTHORIZED.value() ).build();
+  }
+
+  @DELETE
+  @Path("/users/{login}")
+  public Response deleteUser( @HeaderParam("password") final String password, @HeaderParam("login") final String login,
+    @PathParam("login") final String joggersLogin )
+  {
+    boolean isAuthorized = isAuthorized( login, password );
+    if ( isAuthorized ) {
+      final User outdatedUser = simpleDataBase.getUsers().stream()
+        .filter( user -> user.getLogin().equals( joggersLogin ) )
+        .findFirst().get();
+      simpleDataBase.getUsers().remove( outdatedUser );
+      return Response.status( HttpStatus.NO_CONTENT.value() ).build();
+    }
+    return Response.status( HttpStatus.UNAUTHORIZED.value() ).build();
+  }
+
+  @POST
+  @Path("/users/{login}/runs")
+  public Response addRun( @PathParam("login") final String joggersLogin,
+    @HeaderParam("password") final String password, @HeaderParam("login") final String login,
+    final Run run )
+  {
+    boolean isAuthorized = isAuthorized( login, password );
+    if ( isAuthorized ) {
+      simpleDataBase.getUsers().stream().filter( user -> user.getLogin().equals( joggersLogin ) ).findFirst()
+        .ifPresent( user -> user.getJogHistory().put( LocalDate.now().toString(), run ) );
+      return Response.status( HttpStatus.CREATED.value() ).build();
+    }
+    return Response.status( HttpStatus.UNAUTHORIZED.value() ).build();
+  }
+
+  private boolean isAuthorized( final String login, final String password )
+  {
+    return simpleDataBase.getUsers().stream()
+      .anyMatch(user -> login.equals( user.getLogin() ) && password.equals( user.getPassword() ) );
   }
 }
