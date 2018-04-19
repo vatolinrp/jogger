@@ -14,7 +14,7 @@ public class User
   @JsonIgnore
   private String password;
 
-  private Map<String, Run> jogHistory;
+  private Map<Integer, Run> jogHistory;
 
   public String getName() {
     return name;
@@ -40,14 +40,14 @@ public class User
     this.password = password;
   }
 
-  public Map<String, Run> getJogHistory() {
+  public Map<Integer, Run> getJogHistory() {
     if ( jogHistory == null ) {
       jogHistory = new HashMap<>();
     }
     return jogHistory;
   }
 
-  public void setJogHistory(Map<String, Run> jogHistory) {
+  public void setJogHistory(Map<Integer, Run> jogHistory) {
     this.jogHistory = jogHistory;
   }
 }
