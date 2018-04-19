@@ -1,18 +1,16 @@
 package com.vatolinrp.jogger.model;
 
-import java.time.LocalTime;
-
 public class Run
 {
-  private LocalTime timeSpent;
+  private String timeSpent;
   private Double distance;
   private Double speed;
 
-  public LocalTime getTimeSpent() {
+  public String getTimeSpent() {
     return timeSpent;
   }
 
-  public void setTimeSpent(LocalTime timeSpent) {
+  public void setTimeSpent(String timeSpent) {
     this.timeSpent = timeSpent;
   }
 

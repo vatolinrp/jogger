@@ -2,7 +2,6 @@ package com.vatolinrp.jogger.model;
 
 import com.fasterxml.jackson.annotation.JsonIgnore;
 
-import java.time.LocalDate;
 import java.util.HashMap;
 import java.util.Map;
 
@@ -15,7 +14,7 @@ public class User
   @JsonIgnore
   private String password;
 
-  private Map<LocalDate, Run> jogHistory;
+  private Map<String, Run> jogHistory;
 
   public String getName() {
     return name;
@@ -41,14 +40,14 @@ public class User
     this.password = password;
   }
 
-  public Map<LocalDate, Run> getJogHistory() {
+  public Map<String, Run> getJogHistory() {
     if ( jogHistory == null ) {
       jogHistory = new HashMap<>();
     }
     return jogHistory;
   }
 
-  public void setJogHistory(Map<LocalDate, Run> jogHistory) {
+  public void setJogHistory(Map<String, Run> jogHistory) {
     this.jogHistory = jogHistory;
   }
 }
