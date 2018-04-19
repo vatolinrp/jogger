@@ -1,10 +1,12 @@
-apply plugin: 'java'
-repositories {
+configure( subprojects ) { subproject ->
+  apply plugin: 'java'
+  repositories {
     jcenter()
-}
-tasks.withType(JavaCompile) {
+  }
+  tasks.withType(JavaCompile) {
     sourceCompatibility = JavaVersion.VERSION_1_8
     targetCompatibility = JavaVersion.VERSION_1_8
+  }
 }
 
 task wrapper (type: Wrapper) {
