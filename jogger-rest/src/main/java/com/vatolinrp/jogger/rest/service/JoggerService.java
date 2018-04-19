@@ -35,7 +35,6 @@ public class JoggerService {
   @GET
   @Path("/ping")
   public String ping() {
-
     return "ping";
   }
 
@@ -46,11 +45,18 @@ public class JoggerService {
     return Response.status( HttpStatus.OK.value() ).entity( simpleDataBase.getUsers() ).build();
   }
 
+  @GET
+  @Path("/users/{login}")
+  public Response getAllUsers( @PathParam("login") final String joggersLogin )
+  {
+    return Response.status( HttpStatus.OK.value() ).entity( simpleDataBase.getUsers().get( joggersLogin ) ).build();
+  }
+
   @POST
   @Path("/users")
   public Response createUser( final User user )
   {
-    simpleDataBase.getUsers().add( user );
+    simpleDataBase.getUsers().put( user.getLogin(), user );
     return Response.status( HttpStatus.CREATED.value() ).build();
   }
 
@@ -61,11 +67,8 @@ public class JoggerService {
   {
     boolean isAuthorized = isAuthorized( login, password );
     if ( isAuthorized ) {
-      final User outdatedUser = simpleDataBase.getUsers().stream()
-        .filter( user -> user.getLogin().equals( joggersLogin ) )
-        .findFirst().get();
-      simpleDataBase.getUsers().remove( outdatedUser );
-      simpleDataBase.getUsers().add( userToUpdate );
+      simpleDataBase.getUsers().remove( joggersLogin );
+      simpleDataBase.getUsers().put( userToUpdate.getLogin(), userToUpdate );
       return Response.status( HttpStatus.NO_CONTENT.value() ).build();
     }
     return Response.status( HttpStatus.UNAUTHORIZED.value() ).build();
@@ -78,10 +81,7 @@ public class JoggerService {
   {
     boolean isAuthorized = isAuthorized( login, password );
     if ( isAuthorized ) {
-      final User outdatedUser = simpleDataBase.getUsers().stream()
-        .filter( user -> user.getLogin().equals( joggersLogin ) )
-        .findFirst().get();
-      simpleDataBase.getUsers().remove( outdatedUser );
+      simpleDataBase.getUsers().remove( joggersLogin );
       return Response.status( HttpStatus.NO_CONTENT.value() ).build();
     }
     return Response.status( HttpStatus.UNAUTHORIZED.value() ).build();
@@ -96,8 +96,7 @@ public class JoggerService {
     boolean isAuthorized = isAuthorized( login, password );
     if ( isAuthorized ) {
       run.setId( ThreadLocalRandom.current().nextInt(0, 999) );
-      simpleDataBase.getUsers().stream().filter( user -> user.getLogin().equals( joggersLogin ) ).findFirst()
-        .ifPresent( user -> user.getJogHistory().put( run.getId(), run ) );
+      simpleDataBase.getUsers().get( joggersLogin ).getJogHistory().put( run.getId(), run );
       return Response.status( HttpStatus.CREATED.value() ).build();
     }
     return Response.status( HttpStatus.UNAUTHORIZED.value() ).build();
@@ -110,10 +109,22 @@ public class JoggerService {
   {
     boolean isAuthorized = isAuthorized( login, password );
     if ( isAuthorized ) {
-      final Collection<Run> runs = simpleDataBase.getUsers().stream()
-        .filter( user -> user.getLogin().equals( joggersLogin ) ).findFirst()
-        .get().getJogHistory().values();
+      final Collection<Run> runs = simpleDataBase.getUsers().get( joggersLogin ).getJogHistory().values();
       return Response.status( HttpStatus.OK.value() ).entity( runs ).build();
+    }
+    return Response.status( HttpStatus.UNAUTHORIZED.value() ).build();
+  }
+
+  @GET
+  @Path("/users/{login}/runs/{runId}")
+  public Response getRun( @PathParam("login") final String joggersLogin,
+    @HeaderParam("password") final String password, @HeaderParam("login") final String login,
+    @PathParam("runId") final String runId )
+  {
+    boolean isAuthorized = isAuthorized( login, password );
+    if ( isAuthorized ) {
+      final Run run = simpleDataBase.getUsers().get( joggersLogin ).getJogHistory().get(Integer.valueOf( runId ) );
+      return Response.status( HttpStatus.OK.value() ).entity( run ).build();
     }
     return Response.status( HttpStatus.UNAUTHORIZED.value() ).build();
   }
@@ -126,8 +137,7 @@ public class JoggerService {
   {
     boolean isAuthorized = isAuthorized( login, password );
     if ( isAuthorized ) {
-      final User jogger = simpleDataBase.getUsers().stream()
-        .filter( user -> user.getLogin().equals( joggersLogin ) ).findFirst().get();
+      final User jogger = simpleDataBase.getUsers().get( joggersLogin );
       jogger.getJogHistory().remove( Integer.valueOf( runId ) );
       jogger.getJogHistory().put( Integer.valueOf( runId ), run );
       return Response.status( HttpStatus.OK.value() ).build();
@@ -143,9 +153,7 @@ public class JoggerService {
   {
     boolean isAuthorized = isAuthorized( login, password );
     if ( isAuthorized ) {
-      simpleDataBase.getUsers().stream()
-        .filter( user -> user.getLogin().equals( joggersLogin ) ).findFirst()
-        .ifPresent( user -> user.getJogHistory().remove( Integer.valueOf( runId ) ) );
+      simpleDataBase.getUsers().get( joggersLogin ).getJogHistory().remove( Integer.valueOf( runId ) );
       return Response.status( HttpStatus.OK.value() ).build();
     }
     return Response.status( HttpStatus.UNAUTHORIZED.value() ).build();
@@ -153,7 +161,6 @@ public class JoggerService {
 
   private boolean isAuthorized( final String login, final String password )
   {
-    return simpleDataBase.getUsers().stream()
-      .anyMatch(user -> login.equals( user.getLogin() ) && password.equals( user.getPassword() ) );
+    return simpleDataBase.getUsers().get( login ).getPassword().equals( password );
   }
 }

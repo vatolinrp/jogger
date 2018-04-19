@@ -3,16 +3,16 @@ package com.vatolinrp.jogger.storage;
 import com.vatolinrp.jogger.model.User;
 import org.springframework.stereotype.Component;
 
-import java.util.ArrayList;
-import java.util.List;
+import java.util.HashMap;
+import java.util.Map;
 
 @Component
 public final class SimpleDataBase
 {
-  private List<User> users;
+  private Map<String,User> users;
 
   public SimpleDataBase() {
-    this.users = new ArrayList<>();
+    this.users = new HashMap<>();
     final User admin = new User();
     admin.setLogin( "admin" );
     admin.setName( "Admin's name" );
@@ -21,11 +21,11 @@ public final class SimpleDataBase
     supporter.setLogin("supporter");
     supporter.setPassword("supporter");
     supporter.setName("Supporter's name");
-    this.users.add( admin );
-    this.users.add( supporter );
+    this.users.put( admin.getLogin(), admin );
+    this.users.put( supporter.getLogin(), supporter );
   }
 
-  public List<User> getUsers() {
+  public Map<String,User> getUsers() {
     return users;
   }
 }
