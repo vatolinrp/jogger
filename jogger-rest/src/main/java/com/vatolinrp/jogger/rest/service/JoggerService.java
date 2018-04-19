@@ -19,7 +19,15 @@ import javax.ws.rs.PathParam;
 import javax.ws.rs.Produces;
 import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.Response;
+import java.time.LocalDate;
+import java.time.format.DateTimeFormatter;
+import java.util.ArrayList;
 import java.util.Collection;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
+import java.util.SortedSet;
+import java.util.TreeSet;
 import java.util.concurrent.ThreadLocalRandom;
 
 @Service
@@ -125,6 +133,30 @@ public class JoggerService {
     if ( isAuthorized ) {
       final Run run = simpleDataBase.getUsers().get( joggersLogin ).getJogHistory().get(Integer.valueOf( runId ) );
       return Response.status( HttpStatus.OK.value() ).entity( run ).build();
+    }
+    return Response.status( HttpStatus.UNAUTHORIZED.value() ).build();
+  }
+
+  @GET
+  @Path("/users/{login}/reports/runs")
+  public Response getReport( @PathParam("login") final String joggersLogin,
+    @HeaderParam("password") final String password, @HeaderParam("login") final String login,
+    @PathParam("runId") final String runId )
+  {
+    boolean isAuthorized = isAuthorized( login, password );
+    if ( isAuthorized ) {
+      final Map<Integer,Run> jogHistory = simpleDataBase.getUsers().get( joggersLogin ).getJogHistory();
+      Map<LocalDate,Run> joggings = new HashMap<>();
+      for( Run run: jogHistory.values() ) {
+        final DateTimeFormatter formatter = DateTimeFormatter.ofPattern("yyyy-MM-dd");
+        joggings.put( LocalDate.parse(run.getDate(), formatter), run);
+      }
+      SortedSet<LocalDate> keys = new TreeSet<>(joggings.keySet());
+      List<Run> sortedRuns = new ArrayList<>();
+      for (LocalDate key : keys) {
+        sortedRuns.add( joggings.get(key) );
+      }
+      return Response.status( HttpStatus.OK.value() ).entity( sortedRuns ).build();
     }
     return Response.status( HttpStatus.UNAUTHORIZED.value() ).build();
   }
