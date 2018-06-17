@@ -17,7 +17,6 @@ import java.util.Collections;
 @SpringBootApplication
 @ComponentScan( value = "com.vatolinrp.jogger" )
 public class RestService {
-  private static final int port = 8081;
   private static final String basePath = "/*";
 
   @Autowired
@@ -27,6 +26,8 @@ public class RestService {
   private JoggerService joggerService;
 
   public static void main( String[] args ) {
+    final int port = Integer.valueOf( System.getenv( "PORT" ) );
+    System.out.println( "port is " + port );
     System.getProperties().put( "server.port", port );
     SpringApplication.run( RestService.class, args );
   }
