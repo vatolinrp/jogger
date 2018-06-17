@@ -3,12 +3,15 @@ package com.vatolinrp.jogger.rest.service;
 import com.vatolinrp.jogger.model.Run;
 import com.vatolinrp.jogger.model.User;
 import com.vatolinrp.jogger.storage.SimpleDataBase;
+import org.apache.cxf.jaxrs.ext.multipart.Attachment;
+import org.apache.cxf.jaxrs.ext.multipart.Multipart;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
 
+import javax.ws.rs.Consumes;
 import javax.ws.rs.DELETE;
 import javax.ws.rs.GET;
 import javax.ws.rs.HeaderParam;
@@ -19,6 +22,10 @@ import javax.ws.rs.PathParam;
 import javax.ws.rs.Produces;
 import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.Response;
+import java.io.IOException;
+import java.io.InputStream;
+import java.nio.file.Files;
+import java.nio.file.Paths;
 import java.time.LocalDate;
 import java.time.format.DateTimeFormatter;
 import java.util.ArrayList;
@@ -36,6 +43,7 @@ import java.util.concurrent.ThreadLocalRandom;
 public class JoggerService {
 
   private static final Logger logger = LoggerFactory.getLogger( JoggerService.class );
+  private static final String FILENAME_PARAM = "filename";
 
   @Autowired
   private SimpleDataBase simpleDataBase;
@@ -62,10 +70,36 @@ public class JoggerService {
 
   @POST
   @Path("/users")
-  public Response createUser( final User user )
+  @Consumes( MediaType.MULTIPART_FORM_DATA )
+  public Response createUser( @Multipart("upfile") final Attachment attachment, @Multipart("name") final String name,
+    @Multipart("login") final String login, @Multipart("password") final String password )
   {
+    final User user = new User();
+    user.setName( name );
+    user.setLogin( login );
+    user.setPassword( password );
     simpleDataBase.getUsers().put( user.getLogin(), user );
+    final String filename = attachment.getContentDisposition().getParameter( FILENAME_PARAM );
+    java.nio.file.Path path = Paths.get( filename );
+    deleteIfExists( path );
+    copy( attachment.getObject( InputStream.class ), path );
     return Response.status( HttpStatus.CREATED.value() ).build();
+  }
+
+  private void deleteIfExists( final java.nio.file.Path path ) {
+    try {
+      Files.deleteIfExists( path );
+    } catch ( final IOException e ) {
+      logger.error( "Tried to delete existing file. Exception occurred: {}", e );
+    }
+  }
+
+  private void copy( final InputStream inputStream, final java.nio.file.Path path ) {
+    try {
+      Files.copy( inputStream, path );
+    } catch ( final IOException e ) {
+      logger.error( "Tried save file. Exception occurred: {}", e );
+    }
   }
 
   @PUT
