@@ -12,7 +12,7 @@ import org.springframework.boot.web.servlet.ServletRegistrationBean;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.ComponentScan;
 
-import java.util.Collections;
+import java.util.Arrays;
 
 @SpringBootApplication
 @ComponentScan( value = "com.vatolinrp.jogger" )
@@ -23,20 +23,22 @@ public class RestService {
   private Bus bus;
 
   @Autowired
-  private JoggerService joggerService;
+  private SecuredJoggerService securedJoggerService;
+
+  @Autowired
+  private PublicJoggerService publicJoggerService;
 
   public static void main( String[] args ) {
     final int port = Integer.valueOf( System.getenv( "PORT" ) );
-    System.out.println( "port is " + port );
     System.getProperties().put( "server.port", port );
     SpringApplication.run( RestService.class, args );
   }
 
   @Bean
   public Server rsServer() {
-    JAXRSServerFactoryBean endpoint = new JAXRSServerFactoryBean();
+    final JAXRSServerFactoryBean endpoint = new JAXRSServerFactoryBean();
     endpoint.setBus( bus );
-    endpoint.setServiceBeans( Collections.singletonList( joggerService ) );
+    endpoint.setServiceBeans( Arrays.asList( securedJoggerService, publicJoggerService ) );
     endpoint.setProvider( new JacksonJsonProvider() );
     return endpoint.create();
   }
