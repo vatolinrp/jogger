@@ -16,12 +16,13 @@ public class UUIDUserAuthenticationService implements UserAuthenticationService 
 
   @Override
   public Optional<String> login( String username, String password ) {
-    final String uuid = UUID.randomUUID().toString();
     final User user = simpleDataBase.getUsers().get( username );
     if ( user != null && password.equals( user.getPassword() ) ) {
+      final String uuid = UUID.randomUUID().toString();
       user.setToken( uuid );
+      return Optional.of(uuid);
     }
-    return Optional.of(uuid);
+    return Optional.empty();
   }
 
   @Override
