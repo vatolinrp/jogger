@@ -8,8 +8,7 @@ import java.util.Collection;
 import java.util.HashMap;
 import java.util.Map;
 
-public class User implements UserDetails
-{
+public class User implements UserDetails {
   private String name;
 
   private String login;

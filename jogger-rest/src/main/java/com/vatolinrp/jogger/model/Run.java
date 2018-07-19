@@ -1,7 +1,6 @@
 package com.vatolinrp.jogger.model;
 
-public class Run
-{
+public class Run {
   private Integer id;
   private String date;
   private String timeSpent;

@@ -7,8 +7,8 @@ import java.util.HashMap;
 import java.util.Map;
 
 @Component
-public final class SimpleDataBase
-{
+public final class SimpleDataBase {
+
   private Map<String,User> users;
 
   public SimpleDataBase() {

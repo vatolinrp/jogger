@@ -17,6 +17,7 @@ import java.util.Arrays;
 @SpringBootApplication
 @ComponentScan( value = "com.vatolinrp.jogger" )
 public class RestService {
+
   private static final String basePath = "/*";
 
   @Autowired
