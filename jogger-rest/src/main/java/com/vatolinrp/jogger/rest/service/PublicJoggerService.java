@@ -13,9 +13,8 @@ import javax.ws.rs.Produces;
 import javax.ws.rs.core.MediaType;
 
 @Service
-@Produces( MediaType.APPLICATION_JSON )
-@Consumes( MediaType.APPLICATION_JSON )
 @Path( "/" )
+@Produces( MediaType.TEXT_PLAIN )
 public class PublicJoggerService {
 
   @Autowired
@@ -29,8 +28,9 @@ public class PublicJoggerService {
 
   @POST
   @Path("/login")
-  public String login( final User userToUpdate ) {
-    return userAuthenticationService.login( userToUpdate.getUsername(), userToUpdate.getPassword() )
+  @Consumes( MediaType.APPLICATION_JSON )
+  public String login( final User user ) {
+    return userAuthenticationService.login( user.getUsername(), user.getPassword() )
       .orElseThrow( () -> new RuntimeException( "invalid login and/or password" ) );
   }
 }
