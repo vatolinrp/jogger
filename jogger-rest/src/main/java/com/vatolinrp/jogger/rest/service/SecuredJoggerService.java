@@ -11,6 +11,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.stereotype.Service;
+import org.springframework.web.bind.annotation.RequestParam;
 
 import javax.ws.rs.Consumes;
 import javax.ws.rs.DELETE;
@@ -21,6 +22,7 @@ import javax.ws.rs.PUT;
 import javax.ws.rs.Path;
 import javax.ws.rs.PathParam;
 import javax.ws.rs.Produces;
+import javax.ws.rs.QueryParam;
 import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.Response;
 import java.io.IOException;
@@ -52,9 +54,17 @@ public class SecuredJoggerService {
 
   @GET
   @Path("/users")
-  public Response getAllUsers( @AuthenticationPrincipal final User user )
+  public void getAllUsers( @AuthenticationPrincipal User user ) {}
+
+  @GET
+  @Path("/secured/users")
+  public Response getAllUsers( @QueryParam("authToken") final String authToken )
   {
-    return Response.status( HttpStatus.OK.value() ).entity( simpleDataBase.getUsers() ).build();
+    if ( simpleDataBase.getAuthenticationTokens().contains( authToken ) ) {
+      simpleDataBase.getAuthenticationTokens().remove( authToken );
+      return Response.status( HttpStatus.OK.value() ).entity( simpleDataBase.getUsers() ).build();
+    }
+    return Response.status( HttpStatus.FORBIDDEN.value() ).build();
   }
 
   @GET

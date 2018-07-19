@@ -1,5 +1,6 @@
 package com.vatolinrp.jogger.security;
 
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.web.servlet.FilterRegistrationBean;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
@@ -34,6 +35,9 @@ public class SecurityConfig extends WebSecurityConfigurerAdapter {
     super();
     this.provider = provider;
   }
+
+  @Autowired
+  private SecuredRedirectStrategy securedRedirectStrategy;
 
   @Override
   protected void configure( final AuthenticationManagerBuilder auth ) {
@@ -79,7 +83,7 @@ public class SecurityConfig extends WebSecurityConfigurerAdapter {
   @Bean
   public SimpleUrlAuthenticationSuccessHandler successHandler() {
     final SimpleUrlAuthenticationSuccessHandler successHandler = new SimpleUrlAuthenticationSuccessHandler();
-    successHandler.setRedirectStrategy( new NoRedirectStrategy() );
+    successHandler.setRedirectStrategy( securedRedirectStrategy );
     return successHandler;
   }
 
